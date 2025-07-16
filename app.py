@@ -7,7 +7,7 @@ import requests
 import streamlit as st
 import lyricsgenius as lg
 from bs4 import BeautifulSoup
-from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyClientCredentials
 
 load_dotenv()
 
@@ -25,12 +25,8 @@ headers = {
 
 base_url = 'https://genius.com/artists'
 
-spots = spotipy.Spotify(auth_manager=SpotifyOAuth(
-    client_id=client_id,
-    client_secret=client_secret,
-    redirect_uri=redirect_uri,
-    scope='user-library-read'
-))
+auth_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
+spots = spotipy.Spotify(auth_manager=auth_manager)
 
 genius = lg.Genius(genius_access_token, timeout=10, retries=3)
 
