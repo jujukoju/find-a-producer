@@ -7,7 +7,7 @@ import requests
 import streamlit as st
 import lyricsgenius as lg
 from bs4 import BeautifulSoup
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyOAuth
 
 load_dotenv()
 
@@ -25,15 +25,14 @@ headers = {
 
 base_url = 'https://genius.com/artists'
 
-auth_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
-spots = spotipy.Spotify(auth_manager=auth_manager)
+spots = spotipy.Spotify(auth_manager=SpotifyOAuth(
+    client_id=client_id,
+    client_secret=client_secret,
+    redirect_uri=redirect_uri,
+    scope='user-library-read'
+))
 
-genius = lg.Genius(
-    genius_access_token, 
-    timeout=10, 
-    retries=3, 
-    remove_section_headers=True
-)
+genius = lg.Genius(genius_access_token, timeout=10, retries=3)
 
 
 def parse_input(user_input):
@@ -47,7 +46,6 @@ def parse_input(user_input):
 def get_song_details(track_name, artist_name):
     try:
         song = genius.search_song(track_name, artist_name)
-        print(f"DEBUG: genius.search_song() returned: {song}")
         if not song:
             print(f"{track_name} by {artist_name} doesn't exist on Genius")
             return None, None
