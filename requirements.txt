@@ -3,3 +3,4 @@ streamlit
 lyricsgenius
 requests
 beautifulsoup4
+dotenv
