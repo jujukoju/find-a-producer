@@ -1,0 +1,5 @@
+spotipy
+streamlit
+lyricsgenius
+requests
+beautifulsoup4
