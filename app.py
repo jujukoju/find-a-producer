@@ -47,7 +47,7 @@ def parse_input(user_input):
 def get_song_details(track_name, artist_name):
     try:
         song = genius.search_song(track_name, artist_name)
-            print(f"DEBUG: genius.search_song() returned: {song}")
+        print(f"DEBUG: genius.search_song() returned: {song}")
         if not song:
             print(f"{track_name} by {artist_name} doesn't exist on Genius")
             return None, None
