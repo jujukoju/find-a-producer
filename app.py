@@ -12,6 +12,7 @@ from spotipy.oauth2 import SpotifyOAuth
 load_dotenv()
 
 st.title("Producer Search🔍")
+st.header("Find Your Music!")
 
 client_id = os.getenv("SPOTIFY_CLIENT_ID")
 client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
@@ -42,7 +43,7 @@ def parse_input(user_input):
     st.warning("Please use the format above")
     return None, None
 
-@st.cache_data(show_spinner=False)
+
 def get_song_details(track_name, artist_name):
     try:
         song = genius.search_song(track_name, artist_name)
@@ -61,8 +62,8 @@ def get_song_details(track_name, artist_name):
         matches = re.findall(producer_pattern, description, re.IGNORECASE)
         if matches:
             for match in matches:
-                cleaned_producers = [name.strip() for name in match.split('&') if name.strip()]
-                producers.extend(cleaned_producers)
+                cleaned = [name.strip() for name in match.split('&') if name.strip()]
+                producers.extend(cleaned)
 
         if not producers and 'producer_artists' in song_info.get('song', {}):
             producers = [p['name'] for p in song_info['song']['producer_artists']]
@@ -112,11 +113,23 @@ def song_search(producer_name):
 
 user_input = st.text_input("Enter a track name and artist (e.g., Gimme Dat by Ayra):")
 
+suggested_input = None
+if user_input:
+    results = spots.search(q=user_input, type='track', limit=5)
+    suggestions = [f"{item['name']} by {item['artists'][0]['name']}" for item in results['tracks']['items']]
+
+    if suggestions:
+        suggested_input = st.selectbox("Did you mean:", suggestions)
+    else:
+        st.info("No suggestions found yet. Try refining your search.")
+
+final_input = suggested_input if suggested_input else user_input
+
 if st.button("Find Your Music"):
-    if not user_input:
+    if not final_input:
         st.warning("Please enter a track and artist.")
     else:
-        track_name, artist_name = parse_input(user_input)
+        track_name, artist_name = parse_input(final_input)
         if not artist_name:
             st.warning("Please include artist name using format: Track by Artist.")
         else:
@@ -132,9 +145,9 @@ if st.button("Find Your Music"):
 
                 spotify_url = track.get('external_urls', {}).get('spotify')
                 if spotify_url:
-                    st.markdown(f'[🔗- Check it out on Spotify]({spotify_url})')
+                    st.markdown(f'[🔗-Spotify]({spotify_url})')
 
-                with st.spinner("finding your producers..."):
+                with st.spinner("Finding your producers..."):
                     song_id, producers = get_song_details(track['name'], artist_name)
 
                 if not song_id:
@@ -143,7 +156,7 @@ if st.button("Find Your Music"):
                     if producers:
                         st.info(f"Producers: {', '.join(producers)}")
                         for producer in producers:
-                            with st.spinner(f"scraping your favorites now"):
+                            with st.spinner(f"Scraping your favorites now..."):
                                 producer_slug = producer.lower().replace(" ", "-")
                                 song_data = song_search(producer_slug)
 
